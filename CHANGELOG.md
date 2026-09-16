@@ -1,17 +1,17 @@
-# Changelog
+# 版本变更记录
 
 ## 0.2.0
 
-- Add read/edit/run permission modes and retain `--allow-run` compatibility.
-- Validate tool arguments locally against JSON Schema and return structured errors.
-- Recover tool-call message state after failures and cancellation.
-- Apply consistent workspace, sensitive-file, and link checks across file and search tools.
-- Bound file reads, search work, tool output, and command execution.
-- Use approved verification command grammar and the running Python interpreter.
-- Remove model credentials from child process environments.
-- Display actual tool outcomes and support opt-in metadata-only JSONL run records.
-- Explicitly use DeepSeek non-thinking mode for the minimal tool-calling loop.
-- Add offline regression tests and Windows-oriented setup guidance.
+- 新增 `read`、`edit`、`run` 三种权限模式，保留 `--allow-run` 兼容参数。
+- 使用 JSON Schema 在本地校验工具参数，返回结构化错误。
+- 工具失败或取消后，保持工具调用消息完整，支持后续对话继续。
+- 文件与搜索工具统一执行工作目录、敏感文件和链接检查。
+- 为文件读取、搜索、工具输出和命令执行设置资源上限。
+- 使用明确允许的检查命令和当前运行的 Python 解释器。
+- 从子进程环境中移除模型 API 密钥。
+- 显示真实工具执行结果，支持显式开启仅含元数据的 JSONL 执行记录。
+- 显式关闭 DeepSeek 思考模式，保持最小工具调用循环。
+- 增加离线回归测试和适用于 Windows 的环境配置说明。
+- 统一使用中文维护 `AGENTS.md`、`README.md` 和 `CHANGELOG.md`。
 
-Run mode executes trusted project code and is not an OS sandbox. Live provider behavior is not
-established by offline tests; a real API smoke test is a separate check.
+`run` 模式会执行可信项目代码，不提供操作系统级沙箱。离线测试无法验证真实模型服务的可用性；真实 API 调用需要单独验收。

@@ -1,75 +1,70 @@
-# AGENTS.md
+# AGENTS.md · 开发规范
 
-## Scope
+## 适用范围
 
-These instructions apply to every file under `mini-react-agent/`.
-Do not modify files outside this directory unless the user explicitly expands the scope.
+本规范适用于 `mini-react-agent/` 下的全部文件。除非用户明确扩大范围，否则不要修改目录之外的文件。
 
-This is the independent My-Agent Python project. Its own tests and commands run on Windows or
-Linux without ROS 2, colcon, or the parent RAI shell setup. The parent RAI runtime prerequisites
-apply to RAI packages, not to this independent project.
+这是独立的 My-Agent Python 项目，可在 Windows 或 Linux 上运行自身的测试和命令，无需 ROS 2、colcon 或上层 RAI 项目的 Shell 初始化。RAI 的运行前提仅适用于 RAI 包。
 
-## Delegation
+## 文档语言
 
-- Keep architecture, trade-offs, final review, and acceptance with the primary agent.
-- Use the user's currently selected primary model when explicitly requested for the task.
-- Delegate bounded implementation work to `gpt-5.6-terra` with medium reasoning effort when useful.
-- Report unavailable model selections rather than claiming an unperformed model switch.
-- Assign disjoint file ownership and review subagent changes before acceptance.
+- `AGENTS.md`、`README.md` 和 `CHANGELOG.md` 的标题、说明和后续新增内容统一使用中文。
+- 命令、代码、文件名、路径、环境变量、模型标识和必要的技术名称保留原样，确保可直接执行或准确引用。
 
-## Product goal
+## 模型与任务分工
 
-Build a small, understandable command-line ReAct coding agent. It may inspect and edit only a
-user-selected workspace. The first priority is correctness and safety; cleverness and feature count
-come later.
+- 主代理负责架构、取舍、最终审查和验收；用户明确要求时，使用用户当前选择的模型。
+- 适合委派的独立实现任务交给 `gpt-5.6-terra` 子代理，推理强度为中等（`medium`）。
+- 请求的模型不可用时如实说明，不声称完成了实际未执行的模型切换。
+- 为子代理划分互不重叠的文件范围，验收前审查其修改。
 
-## Required behavior
+## 产品目标
 
-- Explain important decisions in plain language suitable for a beginner.
-- Inspect relevant code before editing it. Never invent the contents of an unread file.
-- Keep model access, the agent loop, tools, and the CLI in separate modules.
-- Prefer small, reviewable patches over broad rewrites.
-- Preserve public behavior unless the requested change explicitly alters it.
-- Use type hints for public functions and dataclasses for internal data transfer objects.
-- Never hard-code API keys, tokens, passwords, or user-specific absolute paths. DeepSeek credentials
-  must be read from `DEEPSEEK_API_KEY`.
-- Read secrets only from environment variables. Never print or log secret values.
-- Treat model-produced tool names and arguments as untrusted input.
+构建小巧、易理解的命令行 ReAct 编程智能体。文件工具只能查看和修改用户指定的工作目录。优先保证正确性与安全性，再增加功能。
 
-## Filesystem safety contract
+## 基本开发要求
 
-- Every filesystem target must be resolved and verified to remain inside the configured workspace.
-- Do not follow a symlink to a target outside the workspace.
-- Refuse access to secret-like files such as `.env`, private keys, credentials, and certificates.
-- `write_file` creates new files by default and must refuse accidental overwrite.
-- Modify an existing file with an exact, uniquely matching patch whenever practical.
-- Do not implement recursive deletion or an unrestricted shell tool.
+- 用适合新手理解的语言解释重要决策。
+- 修改前阅读相关代码，不猜测尚未读取的文件内容。
+- 将模型访问、智能体循环、工具和命令行界面放在独立模块中。
+- 优先使用小范围、便于审查的补丁，避免大规模重写。
+- 除非任务明确要求改变，否则保留已有对外行为。
+- 公共函数使用类型标注，内部数据传递对象优先使用数据类。
+- 不硬编码密钥、令牌、密码或用户专属的绝对路径；DeepSeek 密钥从 `DEEPSEEK_API_KEY` 读取。
+- 仅从环境变量读取密钥，不打印或记录密钥值。
+- 将模型生成的工具名称和参数视为不可信输入。
 
-## Command execution contract
+## 文件访问约束
 
-- Command execution is disabled unless the user starts the app with `--mode run` or the legacy
-  `--allow-run` alias. Read mode must never expose mutation tools.
-- Execute argument arrays without a shell (`shell=False`).
-- Allow only explicitly listed development commands.
-- Apply a timeout and output-size limit to every subprocess.
-- Validate the complete command and arguments, not only the executable prefix.
-- Do not pass model API credentials to subprocesses.
-- Pytest executes project code: run mode is for trusted code, not an operating-system sandbox.
-- Never install packages, access the network, change system configuration, or launch background
-  services without explicit user authorization.
+- 解析并校验每个文件访问目标，确保其位于配置的工作目录内。
+- 不通过符号链接访问工作目录之外的目标。
+- 拒绝访问 `.env`、私钥、凭据和证书等敏感文件。
+- `write_file` 默认仅创建新文件，必须拒绝意外覆盖。
+- 修改已有文件时，尽量使用精确且唯一匹配的局部补丁。
+- 不提供递归删除或不受限制的 Shell 工具。
 
-## Development workflow
+## 命令执行约束
 
-1. Read the relevant implementation and tests.
-2. State the smallest intended change.
-3. Make the change with `apply_patch`.
-4. Run the narrowest relevant tests first.
-5. Run the complete project test suite before handoff when the environment permits.
-6. Report changed files, checks run, failures, and anything not verified.
+- 仅在使用 `--mode run` 或兼容参数 `--allow-run` 启动时启用命令执行；只读模式不得提供修改工具。
+- 使用参数数组执行命令，不经过 Shell（`shell=False`）。
+- 仅允许明确列出的开发检查命令，并校验完整命令及参数，不能只检查程序前缀。
+- 每个子进程必须设置超时与输出大小上限。
+- 不向子进程传递模型 API 密钥。
+- pytest 会执行项目代码；运行模式用于可信代码，不提供操作系统级沙箱。
+- 未经用户明确授权，不安装软件包、访问网络、修改系统配置或启动后台服务。
 
-## Commands
+## 开发流程
 
-Run from `mini-react-agent/`:
+1. 阅读相关实现和测试。
+2. 说明本次准备进行的最小修改。
+3. 使用 `apply_patch` 修改文件。
+4. 优先运行与修改直接相关的测试。
+5. 环境允许时，在交付前运行本项目的完整测试。
+6. 报告修改文件、检查结果、失败项和尚未验证的内容。
+
+## 常用命令
+
+在 `mini-react-agent/` 目录执行：
 
 ```powershell
 python -m pytest -q
@@ -77,22 +72,20 @@ python -m ruff check .
 python -m mini_agent --help
 ```
 
-Do not claim a command passed unless it was actually executed successfully.
+只有实际执行成功的命令才能报告为通过。
 
-## Testing requirements
+## 测试要求
 
-- Add or update tests for every behavior change.
-- Use a fake model in unit tests; normal tests must never call a paid API.
-- Path-containment and secret-file rules require explicit negative tests.
-- Tests must not read or modify the user's real files.
-- Use pytest temporary directories for filesystem tests.
-- All tools must enforce the same workspace policy, including each file read by search.
-- Tool arguments must be validated locally before execution.
-- Every assistant tool call must receive a result, including cancelled calls after failure.
-- Cover failure recovery across subsequent turns and attempts to bypass policy.
-- Execution logs contain bounded metadata, not source contents, full arguments, keys, or reasoning.
+- 行为改变时新增或更新相关测试。
+- 单元测试使用模拟模型，常规测试不得调用付费 API。
+- 针对路径越界和敏感文件规则编写明确的拒绝访问测试。
+- 测试不得读取或修改用户的真实文件；文件测试使用 pytest 临时目录。
+- 所有工具执行同一工作目录策略，包括搜索工具读取的每个文件。
+- 工具参数必须先在本地校验，再执行。
+- 每个模型工具调用必须获得对应结果，包括失败后取消的调用。
+- 覆盖后续对话恢复及绕过访问策略的尝试。
+- 执行日志仅记录有上限的元数据，不记录源码正文、完整参数、密钥或模型推理内容。
 
-## Definition of done
+## 完成标准
 
-A change is complete only when its behavior is implemented, relevant tests pass, documentation is
-updated when user-facing behavior changed, and remaining limitations are disclosed.
+所需行为已实现、相关测试通过、涉及用户行为的文档已更新，并如实说明剩余限制后，才能宣布完成。

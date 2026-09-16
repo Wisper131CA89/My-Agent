@@ -1,4 +1,4 @@
-# My-Agent · Mini ReAct Agent V0.2
+# My-Agent · 最小 ReAct 编程智能体 V0.2
 
 这是一个适合学习的最小编程 Agent。它通过结构化工具调用完成下面的循环：
 
@@ -43,8 +43,8 @@ $env:DEEPSEEK_API_KEY = "你的DeepSeek密钥"
 默认配置为：
 
 ```text
-Base URL: https://api.deepseek.com
-Model: deepseek-v4-flash
+接口地址：https://api.deepseek.com
+模型：deepseek-v4-flash
 ```
 
 可通过 `--model` 指定账户可用的其他模型，例如：
@@ -60,7 +60,7 @@ python -m mini_agent --workspace D:\Projects\demo --model deepseek-v4-pro
 
 ```powershell
 New-Item -ItemType Directory -Force D:\AgentWorkspace\demo
-$credential = New-Object System.Management.Automation.PSCredential('deepseek', (Read-Host 'DeepSeek API Key' -AsSecureString))
+$credential = New-Object System.Management.Automation.PSCredential('deepseek', (Read-Host '请输入 DeepSeek 密钥' -AsSecureString))
 $env:DEEPSEEK_API_KEY = $credential.GetNetworkCredential().Password
 Remove-Variable credential
 ```
@@ -98,7 +98,7 @@ python -m mini_agent --workspace D:\Projects\demo
 V0.2 会显示每次工具调用的成功/失败、耗时和受限摘要。默认不持久化会话或工具内容；
 可通过 `--log-runs` 显式开启 JSONL 执行元数据记录，具体参数以 `--help` 为准。
 
-模型客户端对网络请求设置超时与有限重试，并显式关闭 DeepSeek thinking 模式，以保持
+模型客户端对网络请求设置超时与有限重试，并显式关闭 DeepSeek 思考模式，以保持
 最小工具调用消息协议。模型仍能分析任务、选工具和编写代码。未增加推理内容显示或记录。
 
 ## 内置工具
