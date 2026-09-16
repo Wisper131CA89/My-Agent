@@ -14,7 +14,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model", default="deepseek-v4-flash")
     parser.add_argument("--base-url", default="https://api.deepseek.com")
     parser.add_argument("--max-steps", type=int, default=20)
+    parser.add_argument("--mode", choices=("read", "edit", "run"), default="edit")
     parser.add_argument("--allow-run", action="store_true")
+    parser.add_argument("--log-runs", type=Path, metavar="JSONL")
     return parser
 
 
@@ -28,7 +30,9 @@ def main(argv: list[str] | None = None) -> None:
             model=args.model,
             base_url=args.base_url,
             max_steps=args.max_steps,
+            mode=args.mode,
             allow_run=args.allow_run,
+            log_runs=args.log_runs,
         )
         client = DeepSeekChatClient(config.model, config.base_url)
     except (ImportError, OSError, ValueError) as exc:
@@ -38,7 +42,9 @@ def main(argv: list[str] | None = None) -> None:
     agent = ReactAgent(config, client, on_action=lambda text: print(f"  … {text}"))
     print("Mini ReAct Agent")
     print(f"工作目录：{config.workspace}")
-    print(f"命令执行：{'已启用（受限）' if config.allow_run else '已禁用'}")
+    print(
+        f"运行模式：{config.mode}；命令执行：{'已启用（受限）' if config.allow_run else '已禁用'}"
+    )
     print("输入 /help 查看帮助，/exit 退出。")
 
     while True:
@@ -59,5 +65,5 @@ def main(argv: list[str] | None = None) -> None:
             continue
         try:
             print(f"\nAgent > {agent.run_turn(user_input)}")
-        except Exception as exc:
-            print(f"\n模型调用失败：{type(exc).__name__}: {exc}", file=sys.stderr)
+        except Exception:  # noqa: BLE001 - do not let an unexpected UI error end the session.
+            print("\n发生未预期错误；会话仍可继续。", file=sys.stderr)

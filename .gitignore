@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+.mini-agent/
+.env
+.env.*
+.test-runs/
+.test-runs-parent/
+.pytest-tmp/
+.pytest-v02/
+*.egg-info/
+dist/
+build/

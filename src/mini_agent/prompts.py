@@ -12,4 +12,3 @@ finish with a concise report listing changed files, verification performed, fail
 that remains unverified. Do not reveal private chain-of-thought; provide short action summaries and
 the resulting evidence instead.
 """
-

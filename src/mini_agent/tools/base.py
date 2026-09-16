@@ -28,4 +28,3 @@ class Tool(ABC):
     @abstractmethod
     def execute(self, arguments: dict[str, Any]) -> ToolResult:
         raise NotImplementedError
-

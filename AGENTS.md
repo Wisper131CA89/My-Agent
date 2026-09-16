@@ -5,6 +5,18 @@
 These instructions apply to every file under `mini-react-agent/`.
 Do not modify files outside this directory unless the user explicitly expands the scope.
 
+This is the independent My-Agent Python project. Its own tests and commands run on Windows or
+Linux without ROS 2, colcon, or the parent RAI shell setup. The parent RAI runtime prerequisites
+apply to RAI packages, not to this independent project.
+
+## Delegation
+
+- Keep architecture, trade-offs, final review, and acceptance with the primary agent.
+- Use the user's currently selected primary model when explicitly requested for the task.
+- Delegate bounded implementation work to `gpt-5.6-terra` with medium reasoning effort when useful.
+- Report unavailable model selections rather than claiming an unperformed model switch.
+- Assign disjoint file ownership and review subagent changes before acceptance.
+
 ## Product goal
 
 Build a small, understandable command-line ReAct coding agent. It may inspect and edit only a
@@ -35,10 +47,14 @@ come later.
 
 ## Command execution contract
 
-- Command execution is disabled unless the user starts the app with `--allow-run`.
+- Command execution is disabled unless the user starts the app with `--mode run` or the legacy
+  `--allow-run` alias. Read mode must never expose mutation tools.
 - Execute argument arrays without a shell (`shell=False`).
 - Allow only explicitly listed development commands.
 - Apply a timeout and output-size limit to every subprocess.
+- Validate the complete command and arguments, not only the executable prefix.
+- Do not pass model API credentials to subprocesses.
+- Pytest executes project code: run mode is for trusted code, not an operating-system sandbox.
 - Never install packages, access the network, change system configuration, or launch background
   services without explicit user authorization.
 
@@ -70,6 +86,11 @@ Do not claim a command passed unless it was actually executed successfully.
 - Path-containment and secret-file rules require explicit negative tests.
 - Tests must not read or modify the user's real files.
 - Use pytest temporary directories for filesystem tests.
+- All tools must enforce the same workspace policy, including each file read by search.
+- Tool arguments must be validated locally before execution.
+- Every assistant tool call must receive a result, including cancelled calls after failure.
+- Cover failure recovery across subsequent turns and attempts to bypass policy.
+- Execution logs contain bounded metadata, not source contents, full arguments, keys, or reasoning.
 
 ## Definition of done
 
