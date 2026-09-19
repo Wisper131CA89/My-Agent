@@ -6,6 +6,8 @@ __pycache__/
 .mini-agent/
 .env
 .env.*
+mini-agent.toml
+workspace/
 .test-runs/
 .test-runs-parent/
 .pytest-tmp/

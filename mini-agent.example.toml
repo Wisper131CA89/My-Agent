@@ -1,0 +1,17 @@
+# 仅在显式传入 --config 时读取；不要在此文件写入 API Key。
+[agent]
+# 相对路径以本 TOML 文件所在目录为准。
+workspace = "./workspace"
+model = "deepseek-v4-flash"
+base_url = "https://api.deepseek.com"
+max_steps = 20
+mode = "edit"
+show_plan = true
+
+# 这是受信任的本地 stdio 进程启动项。远端服务器的 annotations 不授予权限。
+[mcp.servers.demo]
+command = ["python", "-m", "mini_agent.mcp_demo"]
+timeout_seconds = 10
+
+[mcp.servers.demo.tool_permissions]
+add = "read"

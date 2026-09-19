@@ -1,4 +1,4 @@
-# My-Agent · 最小 ReAct 编程智能体 V0.2
+# My-Agent · 最小 ReAct 编程智能体 V0.3
 
 这是一个适合学习的最小编程 Agent。它通过结构化工具调用完成下面的循环：
 
@@ -13,7 +13,7 @@
 
 项目终极目标调整为：**实现与 General Robotics GRID 已公开功能一致的机器人智能体与开发平台**。从自然语言任务出发，调用与组合技能、生成代码，在仿真中验证和修正，积累可复用的经验，最终通过统一接口部署到真实机器人。
 
-以下是功能目标，不代表当前 V0.2 已实现。RAI 继续作为机器人集成的参考项目；主要功能对标改为 GRID。核查日期：2026-09-17。官方文档当前以 v2.0 为入口；后续调整功能基线时应记录差异。
+以下是功能目标，不代表当前 V0.3 已实现。RAI 继续作为机器人集成的参考项目；主要功能对标改为 GRID。核查日期：2026-09-17。官方文档当前以 v2.0 为入口；后续调整功能基线时应记录差异。
 
 ### 对标项目与公开代码
 
@@ -49,8 +49,8 @@
 
 | 阶段 | 主要交付 | 阶段验收 |
 | --- | --- | --- |
-| V0.2：当前基础 | ReAct 循环、文件工具、权限模式、受限检查与离线测试 | 已有离线测试通过；真实模型调用单独验证 |
-| V0.3：可扩展技能 | 配置文件、技能注册与描述、计划和执行结果、独立 MCP 客户端模块 | 增加一个技能无需修改核心循环；连接一个受控 MCP 服务；只读模式不能调用修改类技能 |
+| V0.2：已完成基础 | ReAct 循环、文件工具、权限模式、受限检查与离线测试 | 已有离线测试通过；真实模型调用单独验证 |
+| V0.3：当前版本 | 配置文件、技能注册与描述、计划和执行结果、独立 MCP 客户端模块 | 增加一个技能无需修改核心循环；连接一个受控 MCP 服务；只读模式不能调用修改类技能 |
 | V0.4：技能复用与记忆 | 经测试的组合技能、任务记录、经验检索、来源和清理机制 | 重启后能检索并复用技能；未通过验证的代码不能自动成为可信技能 |
 | V0.5：感知与机器人抽象 | 视觉服务适配、通用状态/图像/动作数据类型、模拟机器人和动作权限 | 根据录制图像或模拟传感器结果生成动作；能力缺失或参数越界时拒绝执行 |
 | V0.6：首个仿真闭环 | 一个轻量场景，再接入一个可用的 3D 仿真后端；观测、执行、评分和修正 | 在仿真中完成寻找目标与避障，记录失败、修复和重复测试结果 |
@@ -61,15 +61,15 @@
 
 阶段版本是规划编号，不是发布日期。训练、3D 仿真和真机阶段按实测确定 Linux/WSL、GPU、设备和服务要求。模块可接入成熟组件，不需要从头编写物理引擎或训练所有基础模型。
 
-### 下一步：V0.3 的具体范围
+### 当前 V0.3 的范围
 
 先完成可扩展技能基础：增加 `SkillSpec`（名称、参数、返回值、权限、超时、版本及示例）和配置加载，将现有六个工具按统一描述注册；增加独立的 MCP 客户端模块，先连接本地受控服务，再按权限过滤外部工具。任务计划和执行结果应能显示，但不保存模型私有推理。
 
-验收时完成“发现技能 → 校验参数与权限 → 执行 → 返回结果”的流程，覆盖外部服务断连、超时和权限拒绝。现有 V0.2 文件保护继续生效。持久记忆、GPU 仿真和真机接入属于后续阶段，本次目标调整只更新文档，不修改运行代码。
+验收时完成“发现技能 → 校验参数与权限 → 执行 → 返回结果”的流程，覆盖外部服务断连、超时和权限拒绝。现有 V0.2 文件保护继续生效。持久记忆、GPU 仿真和真机接入属于后续阶段。
 
-## 从 V0.1 升级
+## 升级到 V0.3
 
-在项目目录内更新虚拟环境依赖（V0.2 新增 JSON Schema 参数校验）：
+在项目目录内更新虚拟环境依赖（已有 V0.2 环境不需要为 V0.3 新增第三方依赖）：
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
@@ -113,6 +113,39 @@ python -m mini_agent --workspace D:\Projects\demo --model deepseek-v4-pro
 
 ## 使用
 
+### V0.3 显式配置、计划与 MCP
+
+程序**不会**自动搜索或读取工作目录中的配置。使用配置时必须显式传入 `--config`；命令行
+选项优先于文件，文件优先于内置默认值。TOML 中未知字段、错误类型或不合法数值会被拒绝，
+并且配置不接受 API Key、令牌或密码等秘密字段。`workspace` 的相对路径以 TOML 文件所在
+目录为基准。可复制 [mini-agent.example.toml](mini-agent.example.toml)：
+
+```powershell
+Copy-Item .\mini-agent.example.toml .\mini-agent.toml
+New-Item -ItemType Directory -Force .\workspace
+python -m mini_agent --config .\mini-agent.toml
+# 显式选项覆盖 TOML
+python -m mini_agent --config .\mini-agent.toml --mode read --no-show-plan
+python -m mini_agent --config .\mini-agent.toml --list-skills
+```
+
+会话内 `/plan` 显示模型通过 `update_plan` 工具提交的简短公开步骤；程序不显示或记录
+`reasoning_content`，只展示模型提交的简短行动计划；
+`/skills` 列出当前权限模式实际可用的技能（外部 MCP 工具仅在已经连接的正常会话中出现）；
+`--list-skills` 始终只列出离线内置技能，不连接 MCP 或模型。`/result` 将模型的最后回答、
+停止状态与真实工具执行是否全部成功分开显示；仅更新计划不算实际任务执行成功。计划只保存在
+内存中，并会在每个新任务开始时重置（`/clear` 同样会清空）。计划状态是模型提交的公开进度，
+不是程序对任务完成的验证。
+
+MCP 仅实现受控的**本地 stdio** 工具子集：以 UTF-8、每行一条 JSON-RPC 消息启动由配置明确
+指定的进程，完成 initialize/initialized 和 tools/list/tools/call 生命周期。参考官方
+[stdio transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)、
+[lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle) 与
+[tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)。不支持 HTTP、OAuth、
+resources 或 prompts。`tool_permissions` 是本地能力边界，服务器声明的 annotations 不会增加
+权限；启动外部进程本身仍是对该程序的信任，不等同于授予其中每个工具权限。超时元数据会
+约束 MCP 传输请求；普通进程内技能的 metadata 超时不能安全地强行中断任意 Python 代码。
+
 先创建工作目录，再设置当前窗口的密钥。密钥也可以通过不回显的交互输入设置，避免把
 真实值写入 PowerShell 命令历史：
 
@@ -153,11 +186,41 @@ python -m mini_agent --workspace D:\Projects\demo
 - `/clear`：清空当前会话
 - `/exit`：退出
 
-V0.2 会显示每次工具调用的成功/失败、耗时和受限摘要。默认不持久化会话或工具内容；
+V0.3 会显示每次工具调用的成功/失败、耗时和受限摘要。默认不持久化会话或工具内容；
 可通过 `--log-runs` 显式开启 JSONL 执行元数据记录，具体参数以 `--help` 为准。
 
 模型客户端对网络请求设置超时与有限重试，并显式关闭 DeepSeek 思考模式，以保持
 最小工具调用消息协议。模型仍能分析任务、选工具和编写代码。未增加推理内容显示或记录。
+
+### 添加可信本地技能
+
+不要从配置动态导入 Python 代码。应用集成方应在自己的启动代码中显式构造 `Tool` 子类，并以
+`additional_tools` 传给 `ReactAgent`；每个自定义工具都必须覆盖 `skill_spec()`，声明完整的
+`SkillSpec` 契约。下面的只读示例无需改变 Agent 循环：
+
+```python
+from mini_agent import ReactAgent
+from mini_agent.skills import SkillSpec
+from mini_agent.models import ToolResult
+from mini_agent.tools import Tool
+
+class StatusTool(Tool):
+    name = "status"
+    description = "Read a trusted local status value."
+    parameters = {"type": "object", "additionalProperties": False}
+
+    def skill_spec(self):
+        return SkillSpec(self.name, self.description, self.parameters, "Status text.",
+                         "read", 5, "1.0", [], "local")
+
+    def execute(self, arguments):
+        return ToolResult(True, "ready")
+
+agent = ReactAgent(config, model_client, additional_tools=[StatusTool(config.workspace)])
+```
+
+注册表会校验 JSON Schema、名称、权限和超时，并按 `read` / `edit` / `run` 模式过滤；没有显式
+`read` 契约的自定义工具默认按 `run` 权限处理。
 
 ## 内置工具
 

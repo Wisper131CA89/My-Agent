@@ -1,3 +1,4 @@
+from .base import Tool
 from .command import RunCommandTool
 from .filesystem import ApplyPatchTool, ListFilesTool, ReadFileTool, WriteFileTool
 from .registry import ToolRegistry
@@ -9,6 +10,7 @@ __all__ = [
     "ReadFileTool",
     "RunCommandTool",
     "SearchTextTool",
+    "Tool",
     "ToolRegistry",
     "WriteFileTool",
 ]
