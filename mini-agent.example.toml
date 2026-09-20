@@ -7,6 +7,8 @@ base_url = "https://api.deepseek.com"
 max_steps = 20
 mode = "edit"
 show_plan = true
+# 默认 false：只有明确需要跨重启检索经验或配方时才开启。
+memory_enabled = false
 
 # 这是受信任的本地 stdio 进程启动项。远端服务器的 annotations 不授予权限。
 [mcp.servers.demo]

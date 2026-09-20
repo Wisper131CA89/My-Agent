@@ -24,6 +24,9 @@ class AgentConfig:
     allow_run: bool = False  # Compatibility alias; normalized to mode="run".
     log_runs: Path | None = None
     show_plan: bool = True
+    # Persistence is opt-in; a workspace never gains a state directory merely
+    # because the agent was started.
+    memory_enabled: bool = False
     mcp_servers: tuple[Any, ...] = ()
 
     def __post_init__(self) -> None:
@@ -68,6 +71,8 @@ class AgentConfig:
             object.__setattr__(self, "log_runs", resolved)
         if type(self.show_plan) is not bool:
             raise ValueError("show_plan must be a boolean")
+        if type(self.memory_enabled) is not bool:
+            raise ValueError("memory_enabled must be a boolean")
 
 
 _AGENT_FIELDS = {
@@ -81,6 +86,7 @@ _AGENT_FIELDS = {
     "allow_run",
     "log_runs",
     "show_plan",
+    "memory_enabled",
 }
 
 
@@ -106,6 +112,8 @@ def load_config(path: Path, overrides: dict[str, Any] | None = None) -> AgentCon
         if name in values and (type(values[name]) is not int):
             raise _configuration_error()
     if "show_plan" in values and type(values["show_plan"]) is not bool:
+        raise _configuration_error()
+    if "memory_enabled" in values and type(values["memory_enabled"]) is not bool:
         raise _configuration_error()
     if "allow_run" in values and type(values["allow_run"]) is not bool:
         raise _configuration_error()

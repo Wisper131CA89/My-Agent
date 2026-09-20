@@ -13,6 +13,7 @@ IGNORED_NAMES = {
     ".pytest_cache",
     ".mypy_cache",
     ".ruff_cache",
+    ".mini-agent",
     "node_modules",
     "dist",
     "build",

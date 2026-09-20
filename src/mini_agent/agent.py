@@ -21,6 +21,7 @@ from .tools import (
     WriteFileTool,
 )
 from .tools.base import Tool
+from .v04_tools import ListRecipesTool, RunRecipeTool, SearchMemoryTool
 
 
 class ReactAgent:
@@ -54,6 +55,22 @@ class ReactAgent:
             max_output_chars=config.max_tool_output_chars,
             mode=config.mode,
         )
+        self.memory_store = None
+        self.recipe_manager = None
+        if config.memory_enabled:
+            # These stores are deliberately constructed only after opt-in.  In
+            # particular, --list-skills and the default interactive session do
+            # not create .mini-agent or touch persisted state.
+            from .memory import MemoryStore
+            from .recipes import RecipeManager
+
+            self.memory_store = MemoryStore(config.workspace, writable=config.mode != "read")
+            self.recipe_manager = RecipeManager(
+                config.workspace, self.registry, writable=config.mode != "read"
+            )
+            self.registry.register(SearchMemoryTool(config.workspace, self.memory_store))
+            self.registry.register(ListRecipesTool(config.workspace, self.recipe_manager))
+            self.registry.register(RunRecipeTool(config.workspace, self.recipe_manager))
         self.events = EventLogger(config.workspace, config.log_runs)
         self.clear()
 
